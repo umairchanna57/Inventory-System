@@ -13,53 +13,35 @@ class WarehouseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Warehouse
         fields = '__all__'
+        # depth=1
 
     def create(self, validated_data):
         return Warehouse.objects.create(**validated_data)
 
 
-class StockSerializer(serializers.ModelSerializer):
-    # product = ProductSerializer(read_only=True)
-    # warehouse = WarehouseSerializer(read_only=True)
+from rest_framework import serializers
+from .models import Stock
 
-    class Meta: 
+class StockSerializer(serializers.ModelSerializer):
+    product_name = serializers.ReadOnlyField(source='product.name')
+    warehouse_name = serializers.ReadOnlyField(source='warehouse.name')
+
+    class Meta:
         model = Stock
-        fields = ['id', 'warehouse', 'product', 'quantity']  # Corrected 'fields' and 'warehouse'
-        # def create(self, validated_data):
-        #     return Stock.objects.create(**validated_data)
-    
+        fields = ['id', 'warehouse', 'product', 'quantity', 'product_name', 'warehouse_name']
+
+    def create(self, validated_data):
+        return Stock.objects.create(**validated_data)
 
 
 class TransferStockserializer(serializers.ModelSerializer):
-    transfer_from = WarehouseSerializer(read_only=True)
-    tranfer_to = WarehouseSerializer(read_only =True)
-    product = ProductSerializer(read_only=True)
-    user = serializers.StringRelatedField()
-   
-    transfer_from_id = serializers.PrimaryKeyRelatedField(
-        queryset=Warehouse.objects.all(),
-        source='transfer_from',
-        write_only=True
-    )
-    transfer_to_id = serializers.PrimaryKeyRelatedField(
-        queryset=Warehouse.objects.all(),
-        source='transfer_to',
-        write_only=True
-    )
-    product_id = serializers.PrimaryKeyRelatedField(
-        queryset=Product.objects.all(),
-        source='product',
-        write_only=True
-    )
-    user_id = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(),
-        source='user',
-        write_only=True
-    )
+    product_name = serializers.ReadOnlyField(source='product.name')
+    transfer_from_manager_email = serializers.ReadOnlyField(source='transfer_from.manager.email')
 
     class Meta:
         model = TransferStock
-        fields = '__all__'
+        fields = ['id', 'transfer_from', 'transfer_to', 'product', 'quantity', 'product_name', 'transfer_from_manager_email']
+        # depth=1
 
         # def create(self, validated_data):
         #     return TransferStock.objects.create(**validated_data)
